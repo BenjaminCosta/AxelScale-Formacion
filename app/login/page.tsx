@@ -3,21 +3,25 @@
 import type React from "react"
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { Mail, ArrowRight, Loader2 } from "lucide-react"
+import { Mail, ArrowRight, Loader2, AlertCircle, ShieldAlert } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+
+type ErrorType = "no_subscription" | "subscription_inactive" | "general" | null
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState("")
+  const [errorType, setErrorType] = useState<ErrorType>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError("")
+    setErrorType(null)
 
     try {
       const response = await fetch("/api/auth/magic-link", {
@@ -29,13 +33,25 @@ export default function LoginPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to send magic link")
+        // Set specific error type from response
+        if (data.error === "no_subscription") {
+          setErrorType("no_subscription")
+          setError(data.message || "No encontramos una cuenta activa")
+        } else if (data.error === "subscription_inactive") {
+          setErrorType("subscription_inactive")
+          setError(data.message || "Tu suscripción no está activa")
+        } else {
+          setErrorType("general")
+          setError(data.message || data.error || "Error al enviar magic link")
+        }
+        throw new Error(data.error)
       }
 
       setSent(true)
       console.log("[v0] Magic link:", data.magicUrl)
     } catch (err: any) {
-      setError(err.message)
+      // Error already set above
+      console.error("Login error:", err)
     } finally {
       setLoading(false)
     }
@@ -108,7 +124,50 @@ export default function LoginPage() {
                   </div>
 
                   {error && (
-                    <p className="text-sm text-red-500">{error}</p>
+                    <div className={`p-4 rounded-lg border ${
+                      errorType === "no_subscription" || errorType === "subscription_inactive"
+                        ? "bg-amber-500/10 border-amber-500/30"
+                        : "bg-red-500/10 border-red-500/30"
+                    }`}>
+                      <div className="flex items-start gap-3">
+                        {errorType === "no_subscription" || errorType === "subscription_inactive" ? (
+                          <ShieldAlert className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+                        ) : (
+                          <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+                        )}
+                        <div className="flex-1 space-y-2">
+                          <p className={`text-sm font-medium ${
+                            errorType === "no_subscription" || errorType === "subscription_inactive"
+                              ? "text-amber-500"
+                              : "text-red-500"
+                          }`}>
+                            {error}
+                          </p>
+                          {errorType === "no_subscription" && (
+                            <Link href="/subscribe">
+                              <Button 
+                                size="sm" 
+                                className="bg-[#DAA520] hover:bg-[#B8860B] text-black font-bold mt-2"
+                              >
+                                Ver Planes y Suscribirse
+                                <ArrowRight className="h-4 w-4 ml-2" />
+                              </Button>
+                            </Link>
+                          )}
+                          {errorType === "subscription_inactive" && (
+                            <Link href="/subscribe">
+                              <Button 
+                                size="sm" 
+                                className="bg-[#00FF9D] hover:bg-[#00E589] text-black font-bold mt-2"
+                              >
+                                Renovar Suscripción
+                                <ArrowRight className="h-4 w-4 ml-2" />
+                              </Button>
+                            </Link>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   )}
 
                   <Button
@@ -133,7 +192,7 @@ export default function LoginPage() {
 
                 <p className="text-center text-sm text-[#808080] mt-6">
                   ¿No tenés cuenta?{" "}
-                  <Link href="/" className="text-[#DAA520] hover:underline">
+                  <Link href="/subscribe" className="text-[#DAA520] hover:underline">
                     Ver planes
                   </Link>
                 </p>
