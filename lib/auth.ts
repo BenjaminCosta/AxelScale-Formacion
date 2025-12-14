@@ -1,7 +1,26 @@
 import { db } from "./db"
 import { randomBytes } from "crypto"
+import { Resend } from "resend"
 
 const SUPER_ADMIN_EMAIL = "benjacostm100@gmail.com"
+
+// Lazy loading de Resend - safe mode como Stripe
+let resendInstance: Resend | null = null
+
+function getResend(): Resend | null {
+  const apiKey = process.env.RESEND_API_KEY
+
+  if (!apiKey) {
+    console.warn("[Resend] RESEND_API_KEY no configurada - emails deshabilitados")
+    return null
+  }
+
+  if (!resendInstance) {
+    resendInstance = new Resend(apiKey)
+  }
+
+  return resendInstance
+}
 
 export async function createMagicLink(email: string) {
   const token = randomBytes(32).toString("hex")
@@ -97,7 +116,141 @@ export async function sendMagicLinkEmail(email: string, token: string) {
   console.log("[v0] Magic link generated for:", email)
   console.log("[v0] Magic link URL:", magicUrl)
 
-  // In production, integrate with email service (SendGrid, Resend, etc.)
-  // For development, we log the URL
-  return magicUrl
+  const resend = getResend()
+
+  if (!resend) {
+    console.warn("[Resend] Email no configurado - solo logging del magic link")
+    console.log("[v0] 📧 Magic link (desarrollo):", magicUrl)
+    return magicUrl
+  }
+
+  const emailFrom = process.env.EMAIL_FROM
+
+  if (!emailFrom) {
+    console.error("[Resend] EMAIL_FROM no configurado")
+    console.log("[v0] 📧 Magic link (desarrollo):", magicUrl)
+    return magicUrl
+  }
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: emailFrom,
+      to: email,
+      subject: "Tu acceso a AxelScale",
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+                background-color: #f4f4f4;
+              }
+              .container {
+                background-color: #ffffff;
+                border-radius: 8px;
+                padding: 40px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+              }
+              .logo {
+                text-align: center;
+                margin-bottom: 30px;
+              }
+              .logo h1 {
+                color: #DAA520;
+                font-size: 32px;
+                margin: 0;
+                font-weight: bold;
+              }
+              .content {
+                margin: 30px 0;
+              }
+              .button {
+                display: inline-block;
+                padding: 14px 32px;
+                background: linear-gradient(135deg, #DAA520 0%, #B8860B 100%);
+                color: #ffffff !important;
+                text-decoration: none;
+                border-radius: 8px;
+                font-weight: 600;
+                margin: 20px 0;
+                text-align: center;
+              }
+              .button:hover {
+                background: linear-gradient(135deg, #B8860B 0%, #DAA520 100%);
+              }
+              .footer {
+                margin-top: 40px;
+                padding-top: 20px;
+                border-top: 1px solid #e0e0e0;
+                font-size: 12px;
+                color: #888;
+                text-align: center;
+              }
+              .warning {
+                background-color: #fff3cd;
+                border-left: 4px solid #DAA520;
+                padding: 12px;
+                margin: 20px 0;
+                border-radius: 4px;
+                font-size: 14px;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="logo">
+                <h1>AXELSCALE</h1>
+              </div>
+              
+              <div class="content">
+                <h2 style="color: #333; margin-bottom: 20px;">¡Hola! 👋</h2>
+                <p>Has solicitado acceder a tu cuenta de <strong>AxelScale</strong>.</p>
+                <p>Haz clic en el botón de abajo para iniciar sesión de forma segura:</p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="${magicUrl}" class="button">
+                    🔐 Acceder a AxelScale
+                  </a>
+                </div>
+                
+                <div class="warning">
+                  <strong>⚠️ Importante:</strong> Este enlace es válido por <strong>15 minutos</strong> y solo puede usarse una vez.
+                </div>
+                
+                <p style="font-size: 14px; color: #666;">
+                  Si no solicitaste este acceso, puedes ignorar este email de forma segura.
+                </p>
+              </div>
+              
+              <div class="footer">
+                <p>© ${new Date().getFullYear()} AxelScale. Todos los derechos reservados.</p>
+                <p>Este es un email automático, por favor no respondas a este mensaje.</p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `,
+    })
+
+    if (error) {
+      console.error("[Resend] Error enviando email:", error)
+      console.log("[v0] 📧 Fallback - Magic link (desarrollo):", magicUrl)
+      return magicUrl
+    }
+
+    console.log("[Resend] ✅ Email enviado exitosamente:", data?.id)
+    return magicUrl
+  } catch (error) {
+    console.error("[Resend] Exception enviando email:", error)
+    console.log("[v0] 📧 Fallback - Magic link (desarrollo):", magicUrl)
+    return magicUrl
+  }
 }
