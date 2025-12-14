@@ -1,9 +1,24 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { stripe, SUBSCRIPTION_PLANS } from "@/lib/stripe"
+import { getStripe, SUBSCRIPTION_PLANS } from "@/lib/stripe"
 import { getSession } from "@/lib/session"
+
+export const dynamic = "force-dynamic" // evita cualquier intento de static rendering
 
 export async function POST(request: NextRequest) {
   try {
+    const stripe = getStripe()
+
+    if (!stripe) {
+      console.error("[Stripe] Intento de crear checkout sin Stripe configurado")
+      return NextResponse.json(
+        { 
+          ok: false, 
+          error: "Stripe no configurado todavía. Por favor, contacta al administrador." 
+        },
+        { status: 501 }
+      )
+    }
+
     const user = await getSession()
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })

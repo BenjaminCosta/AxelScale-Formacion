@@ -1,12 +1,28 @@
 import Stripe from "stripe"
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error("STRIPE_SECRET_KEY is not set")
+// Lazy loading de Stripe - no rompe el build si no hay keys
+let stripeInstance: Stripe | null = null
+
+export function getStripe(): Stripe | null {
+  const key = process.env.STRIPE_SECRET_KEY
+  
+  if (!key) {
+    console.warn("[Stripe] STRIPE_SECRET_KEY no configurada - Stripe deshabilitado")
+    return null
+  }
+
+  // Singleton: solo crear instancia una vez
+  if (!stripeInstance) {
+    stripeInstance = new Stripe(key, {
+      apiVersion: "2025-11-17.clover",
+    })
+  }
+
+  return stripeInstance
 }
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2024-12-18.acacia",
-})
+// Export legacy para backward compatibility (deprecated)
+export const stripe = getStripe()
 
 export const SUBSCRIPTION_PLANS = {
   monthly: {
