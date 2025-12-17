@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { getPlanDisplayName, getDaysRemaining } from "@/lib/admin"
 import { CreateAdminDialog } from "@/components/create-admin-dialog"
+import { ManageSubscription } from "@/components/manage-subscription"
 import { useRouter } from "next/navigation"
 
 interface Subscription {
@@ -126,7 +127,7 @@ export function AdminContent({ users: initialUsers }: AdminContentProps) {
       >
         <h2 className="font-display text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
           <Crown className="w-5 h-5 text-[#DAA520]" />
-          Crear Nuevo Admin
+          Crear Nuevo Usuario
         </h2>
         <div className="flex gap-4 items-start">
           <div className="flex-1">
@@ -134,7 +135,7 @@ export function AdminContent({ users: initialUsers }: AdminContentProps) {
           </div>
         </div>
         <p className="text-sm text-muted-foreground mt-2">
-          El usuario debe haberse registrado previamente en la plataforma.
+          Crea usuarios con rol ADMIN o USER, y asigna suscripciones manuales.
         </p>
       </motion.div>
 
@@ -208,12 +209,13 @@ export function AdminContent({ users: initialUsers }: AdminContentProps) {
                 <TableHead>Stripe ID</TableHead>
                 <TableHead>Teléfono</TableHead>
                 <TableHead>Creado</TableHead>
+                <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {initialUsers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                     No hay usuarios registrados
                   </TableCell>
                 </TableRow>
@@ -264,6 +266,15 @@ export function AdminContent({ users: initialUsers }: AdminContentProps) {
                       )}
                     </TableCell>
                     <TableCell>{formatDate(user.createdAt)}</TableCell>
+                    <TableCell className="text-right">
+                      <ManageSubscription
+                        userId={user.id}
+                        userEmail={user.email}
+                        currentPlan={user.subscription?.plan}
+                        currentStatus={user.subscription?.status}
+                        currentEndDate={user.subscription?.currentPeriodEnd}
+                      />
+                    </TableCell>
                   </TableRow>
                 ))
               )}

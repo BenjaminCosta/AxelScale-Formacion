@@ -196,6 +196,34 @@ export const db = {
       return prisma.subscription.findUnique({ where })
     },
 
+    create: async ({ data }: any) => {
+      if (isPreview) {
+        return {
+          id: `sub_${Date.now()}`,
+          ...data,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }
+      }
+      // In production, use Prisma
+      const { prisma } = await import('./prisma')
+      return prisma.subscription.create({ data })
+    },
+
+    update: async ({ where, data }: any) => {
+      if (isPreview) {
+        return {
+          id: where.userId,
+          userId: where.userId,
+          ...data,
+          updatedAt: new Date(),
+        }
+      }
+      // In production, use Prisma
+      const { prisma } = await import('./prisma')
+      return prisma.subscription.update({ where, data })
+    },
+
     upsert: async ({ where, create, update }: any) => {
       if (isPreview) {
         return {}
