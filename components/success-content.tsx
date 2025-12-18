@@ -4,8 +4,17 @@ import { motion } from "framer-motion"
 import { CheckCircle, ArrowRight, Sparkles } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { useSearchParams } from "next/navigation"
 
-export default function SuccessContent() {
+interface SuccessContentProps {
+  user?: any
+}
+
+export default function SuccessContent({ user }: SuccessContentProps) {
+  const searchParams = useSearchParams()
+  const sessionId = searchParams.get("session_id")
+  const fromStripe = !!sessionId
+
   return (
     <div className="min-h-screen bg-[#000000] flex items-center justify-center relative overflow-hidden">
       {/* Background effects */}
@@ -61,15 +70,27 @@ export default function SuccessContent() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.5 }}
           >
-            <Link href="/app">
-              <Button 
-                size="lg" 
-                className="group bg-[#00FF9D] hover:bg-[#00E589] text-black font-bold text-base px-8 py-6 h-auto shadow-[0_0_30px_rgba(0,255,157,0.2)] hover:shadow-[0_0_40px_rgba(0,255,157,0.4)] transition-all"
-              >
-                Acceder a la Plataforma
-                <ArrowRight className="h-5 w-5 ml-2 transition-transform group-hover:translate-x-1" />
-              </Button>
-            </Link>
+            {user ? (
+              <Link href="/app">
+                <Button 
+                  size="lg" 
+                  className="group bg-[#00FF9D] hover:bg-[#00E589] text-black font-bold text-base px-8 py-6 h-auto shadow-[0_0_30px_rgba(0,255,157,0.2)] hover:shadow-[0_0_40px_rgba(0,255,157,0.4)] transition-all"
+                >
+                  Acceder a la Plataforma
+                  <ArrowRight className="h-5 w-5 ml-2 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </Link>
+            ) : (
+              <Link href="/login">
+                <Button 
+                  size="lg" 
+                  className="group bg-[#00FF9D] hover:bg-[#00E589] text-black font-bold text-base px-8 py-6 h-auto shadow-[0_0_30px_rgba(0,255,157,0.2)] hover:shadow-[0_0_40px_rgba(0,255,157,0.4)] transition-all"
+                >
+                  Iniciar Sesión
+                  <ArrowRight className="h-5 w-5 ml-2 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </Link>
+            )}
           </motion.div>
 
           {/* Features */}

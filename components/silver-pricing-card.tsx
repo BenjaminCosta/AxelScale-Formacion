@@ -2,17 +2,62 @@
 
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
-import Link from "next/link"
 
 interface SilverPricingCardProps {
   duration: string
   price: string
   durationText: string
+  plan: "monthly" | "annual"
+  userEmail?: string | null
 }
 
-export function SilverPricingCard({ duration, price, durationText }: SilverPricingCardProps) {
+export function SilverPricingCard({ duration, price, durationText, plan, userEmail }: SilverPricingCardProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [isButtonHovered, setIsButtonHovered] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleSubscribe = async () => {
+    if (isLoading) return
+
+    // Si no hay email, pedirlo
+    let email = userEmail
+    if (!email) {
+      email = prompt("Por favor, ingresa tu email para continuar:")
+      if (!email || !email.includes("@")) {
+        alert("Debes ingresar un email válido para continuar.")
+        return
+      }
+    }
+
+    setIsLoading(true)
+
+    try {
+      const response = await fetch("/api/stripe/create-checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          plan,
+          email: email,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Error al crear sesión de pago")
+      }
+
+      if (data.url) {
+        window.location.href = data.url
+      }
+    } catch (error) {
+      console.error("Error:", error)
+      alert("Hubo un error al procesar tu solicitud. Por favor, intenta de nuevo.")
+      setIsLoading(false)
+    }
+  }
 
   return (
     <div 
@@ -89,40 +134,43 @@ export function SilverPricingCard({ duration, price, durationText }: SilverPrici
         <p className="text-white/90 text-base" style={{fontFamily: "'Albert Sans', sans-serif"}}>Cancela cuando quieras.</p>
       </div>
 
-      {/* Botón con enlace y efecto hover */}
-      <Link href="/subscribe" passHref>
-        <Button 
-          className="w-auto px-10 h-14 rounded-full text-2xl uppercase transition-all relative overflow-hidden"
-          style={{
-            background: 'linear-gradient(180deg, #36d67a 0%, #2bc46a 70%, #1fa855 100%)',
-            color: 'black',
-            fontFamily: "'Montserrat', sans-serif",
-            fontWeight: 800,
-            boxShadow: isButtonHovered 
-              ? '0 0 35px rgba(54, 214, 122, 0.6), 0 0 80px rgba(54, 214, 122, 0.3)'
-              : '0 0 20px rgba(54, 214, 122, 0.4)',
-            transform: isButtonHovered ? 'scale(1.05)' : 'scale(1)',
-            transition: 'all 0.3s ease'
-          }}
-          onMouseEnter={() => setIsButtonHovered(true)}
-          onMouseLeave={() => setIsButtonHovered(false)}
-        >
-          {/* Efecto de brillo en hover */}
-          {isButtonHovered && (
-            <div 
-              className="absolute inset-0 pointer-events-none"
-              style={{
-                background: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.25) 20%, rgba(255, 255, 255, 0.35) 50%, rgba(255, 255, 255, 0.25) 80%, transparent 100%)',
-                animation: 'shine 1.5s ease-in-out infinite',
-                borderRadius: '9999px'
-              }}
-            />
-          )}
-          
-          {/* Contenido del botón */}
-          <span className="relative z-10">ELEGIR PLAN</span>
-        </Button>
-      </Link>
+      {/* Botón con onClick y efecto hover */}
+      <Button 
+        onClick={handleSubscribe}
+        disabled={isLoading}
+        className="w-auto px-10 h-14 rounded-full text-2xl uppercase transition-all relative overflow-hidden"
+        style={{
+          background: 'linear-gradient(180deg, #36d67a 0%, #2bc46a 70%, #1fa855 100%)',
+          color: 'black',
+          fontFamily: "'Montserrat', sans-serif",
+          fontWeight: 800,
+          boxShadow: isButtonHovered 
+            ? '0 0 35px rgba(54, 214, 122, 0.6), 0 0 80px rgba(54, 214, 122, 0.3)'
+            : '0 0 20px rgba(54, 214, 122, 0.4)',
+          transform: isButtonHovered ? 'scale(1.05)' : 'scale(1)',
+          transition: 'all 0.3s ease',
+          opacity: isLoading ? 0.7 : 1,
+        }}
+        onMouseEnter={() => setIsButtonHovered(true)}
+        onMouseLeave={() => setIsButtonHovered(false)}
+      >
+        {/* Efecto de brillo en hover */}
+        {isButtonHovered && !isLoading && (
+          <div 
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.25) 20%, rgba(255, 255, 255, 0.35) 50%, rgba(255, 255, 255, 0.25) 80%, transparent 100%)',
+              animation: 'shine 1.5s ease-in-out infinite',
+              borderRadius: '9999px'
+            }}
+          />
+        )}
+        
+        {/* Contenido del botón */}
+        <span className="relative z-10">
+          {isLoading ? "PROCESANDO..." : "ELEGIR PLAN"}
+        </span>
+      </Button>
 
       {/* Estilos para la animación de brillo */}
       <style jsx>{`

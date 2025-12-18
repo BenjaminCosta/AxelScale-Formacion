@@ -1,8 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getStripe, SUBSCRIPTION_PLANS } from "@/lib/stripe"
-import { getSession } from "@/lib/session"
+import { getStripe, STRIPE_PRICES, isValidPlan, type PlanType } from "@/lib/stripe"
 
-export const dynamic = "force-dynamic" // evita cualquier intento de static rendering
+export const dynamic = "force-dynamic"
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,66 +18,65 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const user = await getSession()
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+    const body = await request.json()
+    const { plan, email } = body
 
-    const formData = await request.formData()
-    const plan = formData.get("plan") as keyof typeof SUBSCRIPTION_PLANS
-
-    if (!plan || !SUBSCRIPTION_PLANS[plan]) {
+    // Validar plan
+    if (!plan || !isValidPlan(plan)) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 })
     }
 
-    const planDetails = SUBSCRIPTION_PLANS[plan]
-
-    // Create or retrieve customer
-    let customerId = user.subscription?.stripeCustomerId
-
-    if (!customerId) {
-      const customer = await stripe.customers.create({
-        email: user.email,
-        metadata: {
-          userId: user.id,
-        },
-      })
-      customerId = customer.id
+    // Validar email
+    if (!email || typeof email !== "string" || !email.includes("@")) {
+      return NextResponse.json({ error: "Invalid email" }, { status: 400 })
     }
 
-    // Create checkout session
+    // Obtener priceId desde env
+    const priceId = STRIPE_PRICES[plan as PlanType]
+
+    if (!priceId) {
+      console.error(`[Stripe] Price ID no configurado para plan: ${plan}`)
+      return NextResponse.json(
+        { error: `Plan ${plan} no configurado correctamente` },
+        { status: 500 }
+      )
+    }
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+
+    console.log("[Stripe Checkout] Creating session for:", email, "plan:", plan, "priceId:", priceId)
+
+    // Crear Checkout Session
     const session = await stripe.checkout.sessions.create({
-      customer: customerId,
       mode: "subscription",
       payment_method_types: ["card"],
+      customer_email: email,
       line_items: [
         {
-          price_data: {
-            currency: "eur",
-            product_data: {
-              name: `AXELSCALE 2.0 - ${planDetails.name}`,
-              description: planDetails.description,
-            },
-            unit_amount: planDetails.price,
-            recurring: {
-              interval: planDetails.interval,
-              interval_count: "intervalCount" in planDetails ? planDetails.intervalCount : 1,
-            },
-          },
+          price: priceId,
           quantity: 1,
         },
       ],
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/subscribe`,
+      success_url: `${appUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${appUrl}/subscribe`,
       metadata: {
-        userId: user.id,
         plan,
+        email,
       },
     })
 
-    return NextResponse.redirect(session.url!)
+    if (!session.url) {
+      throw new Error("No se pudo generar URL de checkout")
+    }
+
+    console.log("[Stripe Checkout] Session created:", session.id, "URL:", session.url)
+
+    return NextResponse.json({ url: session.url })
   } catch (error: any) {
-    console.error("[v0] Error creating checkout session:", error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error("[Stripe] Error creating checkout session:", error)
+    return NextResponse.json(
+      { error: error.message || "Error al crear sesión de pago" },
+      { status: 500 }
+    )
   }
 }

@@ -35,9 +35,9 @@ export async function requireAdmin(email: string | null | undefined) {
 
 export function getPlanDisplayName(plan: string): string {
   const planMap: Record<string, string> = {
-    monthly: "Monthly (€49)",
-    quarterly: "3 Months (€129)",
-    annual: "12 Months (€399)",
+    monthly: "1 Mes",
+    quarterly: "3 Meses",
+    annual: "12 Meses",
   }
   return planMap[plan] || plan
 }

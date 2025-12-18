@@ -24,24 +24,43 @@ export function getStripe(): Stripe | null {
 // Export legacy para backward compatibility (deprecated)
 export const stripe = getStripe()
 
+// Plan type definition
+export type PlanType = "monthly" | "quarterly" | "annual"
+
+// Stripe Price IDs desde environment variables
+export const STRIPE_PRICES = {
+  monthly: process.env.PRICE_MONTHLY || "",
+  quarterly: process.env.PRICE_QUARTERLY || "",
+  annual: process.env.PRICE_ANNUAL || "",
+} as const
+
+// Plan metadata (para display en UI)
 export const SUBSCRIPTION_PLANS = {
   monthly: {
-    name: "Mensual",
-    price: 4900, // €49.00 in cents
-    interval: "month" as const,
-    description: "Acceso completo por 1 mes",
+    name: "1 Mes",
+    priceDisplay: "100€",
+    duration: "1 mes",
+    description: "Acceso completo a Axelscale",
+    priceId: STRIPE_PRICES.monthly,
   },
-  "3months": {
+  quarterly: {
     name: "3 Meses",
-    price: 12900, // €129.00 in cents
-    interval: "month" as const,
-    intervalCount: 3,
-    description: "Ahorra 12% - Paga cada 3 meses",
+    priceDisplay: "200€",
+    duration: "3 meses",
+    description: "Acceso completo a Axelscale",
+    badge: "MÁS POPULAR",
+    priceId: STRIPE_PRICES.quarterly,
   },
-  "12months": {
-    name: "12 Meses",
-    price: 39900, // €399.00 in cents
-    interval: "year" as const,
-    description: "Ahorra 33% - Pago anual",
+  annual: {
+    name: "1 Año",
+    priceDisplay: "750€",
+    duration: "12 meses",
+    description: "Acceso completo a AxelScale",
+    priceId: STRIPE_PRICES.annual,
   },
+} as const
+
+// Validar que un plan es válido
+export function isValidPlan(plan: string): plan is PlanType {
+  return plan === "monthly" || plan === "quarterly" || plan === "annual"
 }

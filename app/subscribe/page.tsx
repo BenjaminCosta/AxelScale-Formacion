@@ -84,13 +84,25 @@ export default async function SubscribePage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               
               {/* Card 1 - 1 MES */}
-              <SilverPricingCard duration="1 MES" price="100€" durationText="1 mes" />
+              <SilverPricingCard 
+                duration="1 MES" 
+                price="100€" 
+                durationText="1 mes" 
+                plan="monthly"
+                userEmail={user?.email}
+              />
 
               {/* Card 2 - 3 MESES (Destacada) */}
-              <GoldPricingCard />
+              <GoldPricingCard userEmail={user?.email} />
 
               {/* Card 3 - 1 AÑO */}
-              <SilverPricingCard duration="1 AÑO" price="750€" durationText="12 meses" />
+              <SilverPricingCard 
+                duration="1 AÑO" 
+                price="750€" 
+                durationText="12 meses" 
+                plan="annual"
+                userEmail={user?.email}
+              />
             </div>
 
             {/* Current Plan Card - Show if user has active subscription */}

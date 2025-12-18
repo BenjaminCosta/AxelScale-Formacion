@@ -73,13 +73,7 @@ export function AdminContent({ users: initialUsers }: AdminContentProps) {
   const getPlanBadge = (plan?: string) => {
     if (!plan) return "-"
 
-    const planLabels: Record<string, string> = {
-      monthly: "Mensual",
-      "3months": "3 Meses",
-      "12months": "12 Meses",
-    }
-
-    return <Badge variant="secondary">{planLabels[plan] || getPlanDisplayName(plan)}</Badge>
+    return <Badge variant="secondary">{getPlanDisplayName(plan)}</Badge>
   }
 
   const getDaysRemainingDisplay = (endDate?: Date | null) => {
