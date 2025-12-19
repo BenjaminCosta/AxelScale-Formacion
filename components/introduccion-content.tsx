@@ -59,6 +59,7 @@ const metodos = [
       "S.P.F Automatizaciones",
       "S.P.F Reembolsos",
       "S.P.F Cómo Hacer Envíos",
+      "S.P.F Precio Productos",
     ],
   },
   {
@@ -79,7 +80,7 @@ const metodos = [
       "No puedes llegar a generar cantidades de dinero comparables a: Shopify Ghost Dropshipping",
       "No puedes vender un mismo producto durante el tiempo en el que ese producto está siendo enviado al comprador",
     ],
-    lecciones: ["A.D.R Qué Productos Vender", "A.D.R Dónde Vender Cada Producto"],
+    lecciones: ["A.D.R Que Productos Vender", "A.D.R Donde Vender Cada Producto", "A.D.R Precios Productos"],
   },
 ]
 
