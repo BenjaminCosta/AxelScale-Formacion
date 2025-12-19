@@ -68,8 +68,8 @@ export async function POST(request: Request) {
           plan: plan || "monthly",
           status: status || "active",
           currentPeriodEnd: endDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-          stripeCustomerId: "",
-          stripeSubscriptionId: "",
+          stripeCustomerId: null,
+          stripeSubscriptionId: null,
         },
       })
 

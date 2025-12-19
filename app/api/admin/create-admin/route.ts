@@ -48,7 +48,6 @@ export async function POST(request: Request) {
               plan,
               status,
               currentPeriodEnd: new Date(currentPeriodEnd),
-              currentPeriodStart: new Date(),
             },
           })
         } else {
@@ -59,9 +58,8 @@ export async function POST(request: Request) {
               plan,
               status,
               currentPeriodEnd: new Date(currentPeriodEnd),
-              currentPeriodStart: new Date(),
-              stripeCustomerId: "",
-              stripeSubscriptionId: "",
+              stripeCustomerId: null,
+              stripeSubscriptionId: null,
             },
           })
         }
@@ -92,9 +90,8 @@ export async function POST(request: Request) {
           plan,
           status,
           currentPeriodEnd: new Date(currentPeriodEnd),
-          currentPeriodStart: new Date(),
-          stripeCustomerId: "",
-          stripeSubscriptionId: "",
+          stripeCustomerId: null,
+          stripeSubscriptionId: null,
         },
       })
     }

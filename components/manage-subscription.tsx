@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -42,6 +42,16 @@ export function ManageSubscription({
   const [daysValid, setDaysValid] = useState("30")
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState("")
+
+  // Reset form when dialog opens
+  useEffect(() => {
+    if (open) {
+      setPlan(currentPlan || "monthly")
+      setStatus(currentStatus || "active")
+      setDaysValid("30")
+      setMessage("")
+    }
+  }, [open, currentPlan, currentStatus])
 
   const handleUpdateSubscription = async () => {
     setLoading(true)
