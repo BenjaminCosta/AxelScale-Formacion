@@ -218,25 +218,30 @@ export function AppSidebar({ isOpen, onToggle, user, modules }: AppSidebarProps)
 
             return (
               <div key={module.id} className="space-y-1">
-                <button
-                  onClick={() => toggleModule(module.id)}
-                  className={cn(
-                    "w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200",
-                    isActiveModule(module.slug)
-                      ? "bg-[#DAA520]/10 text-[#DAA520]"
-                      : "text-[#D9D9D9] hover:bg-[#2D2D2D]",
-                  )}
-                >
-                  <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1">
+                  <Link
+                    href={`/app/module/${module.slug}`}
+                    className={cn(
+                      "flex-1 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
+                      isActiveModule(module.slug)
+                        ? "bg-[#DAA520]/10 text-[#DAA520]"
+                        : "text-[#D9D9D9] hover:bg-[#2D2D2D]",
+                    )}
+                  >
                     <Icon className={cn("h-5 w-5", isActiveModule(module.slug) ? "text-[#DAA520]" : "")} />
                     <span className="font-body font-medium text-sm text-left">{module.title}</span>
-                  </div>
-                  {isExpanded ? (
-                    <ChevronDown className="h-4 w-4 text-[#808080]" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4 text-[#808080]" />
-                  )}
-                </button>
+                  </Link>
+                  <button
+                    onClick={() => toggleModule(module.id)}
+                    className="px-2 py-3 text-[#808080] hover:text-[#D9D9D9] transition-colors"
+                  >
+                    {isExpanded ? (
+                      <ChevronDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
 
                 {/* Lessons */}
                 <AnimatePresence>

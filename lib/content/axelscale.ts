@@ -15,6 +15,7 @@ export interface Module {
  title: string
  description: string
  icon: string
+ videoUrl?: string
  order: number
  lessons: Lesson[]
 }
@@ -26,6 +27,7 @@ export const AXELSCALE_MODULES: Module[] = [
  title: "Shopify Ghost Dropshipping",
  description: "Reventa de productos digitales con 100% de margen",
  icon: "ghost",
+ videoUrl: "https://www.youtube.com/embed/7bgOdjETWFg?autoplay=1&mute=1",
  order: 1,
  lessons: [
  {
@@ -295,6 +297,7 @@ Puedes tomar como base las de **axelresells.com** y adaptarlas para tu web.
  title: "Shopify Productos Físicos",
  description: "Reventa de productos físicos con márgenes escalables",
  icon: "package",
+ videoUrl: "https://www.youtube.com/embed/qC4lI_3RkZA?autoplay=1&mute=1",
  order: 2,
  lessons: [
  {
@@ -499,6 +502,7 @@ Packlink te permite comparar precios entre diferentes transportistas y elegir la
  title: "Aplicaciones de Reventa",
  description: "Wallapop, Vinted y marketplaces para resultados rápidos",
  icon: "smartphone",
+ videoUrl: "https://www.youtube.com/embed/Y_gJ09mJoJE?autoplay=1&mute=1",
  order: 3,
  lessons: [
  {

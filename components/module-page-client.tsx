@@ -42,6 +42,27 @@ export function ModulePageClient({ module }: { module: Module }) {
         </div>
       </motion.div>
 
+      {/* Video de Presentación del Módulo */}
+      {module.videoUrl && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05, duration: 0.5 }}
+        >
+          <div className="bg-[rgba(45,45,45,0.95)] backdrop-blur-sm rounded-2xl overflow-hidden border border-[#3A3A3A]">
+            <div className="aspect-video w-full">
+              <iframe
+                src={module.videoUrl}
+                title={`Video de presentación - ${module.title}`}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="w-full h-full"
+              />
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Lessons list */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}

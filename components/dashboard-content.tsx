@@ -39,6 +39,25 @@ export function DashboardContent({ modules, totalLessons, showMockBanner }: Dash
         </h1>
       </motion.div>
 
+      {/* Video de Presentación */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05, duration: 0.5 }}
+      >
+        <div className="bg-card/50 backdrop-blur-sm rounded-2xl overflow-hidden border border-border/50">
+          <div className="aspect-video w-full">
+            <iframe
+              src="https://www.youtube.com/embed/j5M22pWW1aI?autoplay=1&mute=1"
+              title="Video de Presentación AXELSCALE"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="w-full h-full"
+            />
+          </div>
+        </div>
+      </motion.div>
+
       {/* Stats */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
